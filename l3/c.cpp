@@ -1,65 +1,44 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <map>
 using namespace std;
 
 string wff;
 int pos;
 
-int eval(const map<char,int>& env) {
+int eval(map<char,int>& env) {
     char c = wff[pos++];
-    if (c >= 'p' && c <= 't') return env.at(c);
-    if (c == 'N') return 1 - eval(env);
-    int w = eval(env), x = eval(env);
-    if (c == 'K') return w & x;
-    if (c == 'A') return w | x;
-    if (c == 'C') return (1 - w) | x;
-    if (c == 'E') return 1 - (w ^ x);
+    if (c >= 'p' && c <= 't') return env[c];
+    if (c == 'N') return !eval(env);
+    int w = eval(env);
+    int x = eval(env);
+    if (c == 'K') return w && x;
+    if (c == 'A') return w || x;
+    if (c == 'C') return !w || x;
+    if (c == 'E') return w == x;
     return 0;
 }
 
-void collectVars(set<char>& vars) {
-    if (pos >= (int)wff.size()) return;
-    char c = wff[pos++];
-    if (c >= 'p' && c <= 't') { vars.insert(c); return; }
-    if (c == 'N') { collectVars(vars); return; }
-    collectVars(vars); collectVars(vars);
-}
-
-bool esTautologia;
-vector<char> vars;
-map<char,int> asignacion;
-
-void backtrack(int idx) {
-    // caso base: ya asignamos todas las variables
-    if (idx == (int)vars.size()) {
-        pos = 0;
-        if (!eval(asignacion))
-            esTautologia = false; // encontramos un contraejemplo
-        return;
-    }
-
-    // probamos asignar 0 a la variable actual
-    asignacion[vars[idx]] = 0;
-    backtrack(idx + 1);
-
-    // probamos asignar 1 a la variable actual
-    asignacion[vars[idx]] = 1;
-    backtrack(idx + 1);
-}
-
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
     while (cin >> wff && wff != "0") {
-        pos = 0;
-        set<char> varSet;
-        collectVars(varSet);
-        vars.assign(varSet.begin(), varSet.end());
+        // juntar las variables que aparecen
+        string vars = "";
+        for (char c : wff)
+            if (c >= 'p' && c <= 't' && vars.find(c) == string::npos)
+                vars += c;
 
-        esTautologia = true;
-        asignacion.clear();
-        backtrack(0);
+        int n = vars.size();
+        bool taut = true;
 
-        cout << (esTautologia ? "tautology" : "not") << "\n";
+        // probar todas las combinaciones
+        for (int mask = 0; mask < (1 << n) && taut; mask++) {
+            map<char,int> env;
+            for (int i = 0; i < n; i++)
+                env[vars[i]] = (mask >> i) & 1;
+            pos = 0;
+            if (!eval(env)) taut = false;
+        }
+
+        cout << (taut ? "tautology" : "not") << "\n";
     }
 }
