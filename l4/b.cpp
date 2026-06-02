@@ -1,7 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <set>
+#include <queue> // Necesario para priority_queue
+
 using namespace std;
 
 int main() {
@@ -10,32 +11,36 @@ int main() {
 
     int n;
     long long m;
-    cin >> n >> m;
-    vector<pair<int, long long>> researchers(n);
+    if (!(cin >> n >> m)) return 0;
+    
+    vector<pair<long long, long long>> researchers(n);
     for (int i = 0; i < n; i++) {
         cin >> researchers[i].first >> researchers[i].second;
     }
+    
     sort(researchers.begin(), researchers.end());
 
-    multiset<long long> finales;
-    finales.insert(researchers[0].first + researchers[0].second);
+    priority_queue<long long, vector<long long>, greater<long long>> pc_libres;
 
-    int r = 0;
-    for (int i=1; i<n; i++) {
-        int a = researchers[i].first;
+    int saves = 0;
+
+        for (int i = 0; i < n; i++) {
+        long long a = researchers[i].first;
         long long s = researchers[i].second;
-        
-        auto it = finales.upper_bound(a);
-        if (it != finales.begin()) {
-            --it;
-            if (a - *it <= m) {
-                r++;
-                finales.erase(it);
-            }
+
+
+        while (!pc_libres.empty() && pc_libres.top() + m < a) {
+            pc_libres.pop();
         }
-        finales.insert(a+s);
+
+        if (!pc_libres.empty() && pc_libres.top() <= a) {
+            pc_libres.pop();
+            saves++;
+        }
+        pc_libres.push(a + s);
     }
-    cout << r << "\n";
+
+    cout << saves << "\n";
 
     return 0;
 }
