@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <queue> // Necesario para priority_queue
+#include <queue>
 
 using namespace std;
 
@@ -20,27 +20,27 @@ int main() {
     
     sort(researchers.begin(), researchers.end());
 
-    priority_queue<long long, vector<long long>, greater<long long>> pc_libres;
+    priority_queue<long long, vector<long long>, greater<long long>> pc;
 
-    int saves = 0;
+    int r = 0;
 
         for (int i = 0; i < n; i++) {
         long long a = researchers[i].first;
         long long s = researchers[i].second;
 
 
-        while (!pc_libres.empty() && pc_libres.top() + m < a) {
-            pc_libres.pop();
+        while (!pc.empty() && pc.top() + m < a) {
+            pc.pop();
         }
 
-        if (!pc_libres.empty() && pc_libres.top() <= a) {
-            pc_libres.pop();
-            saves++;
+        if (!pc.empty() && pc.top() <= a) {
+            pc.pop();
+            r++;
         }
-        pc_libres.push(a + s);
+        pc.push(a + s);
     }
 
-    cout << saves << "\n";
+    cout << r << "\n";
 
     return 0;
 }
